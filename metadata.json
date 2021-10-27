@@ -1,0 +1,8 @@
+{
+ "uuid": "trimmer@ILikePython256",
+ "name": "URL Trimmer",
+ "description": "Trim URL on clipboard",
+ "url" : "https://github.com/ILikePython256/trimmer@ILikePython256",
+ "original-authors" : ["ebbes", "wrouesnel"],
+ "version" : "0.0.1"
+}

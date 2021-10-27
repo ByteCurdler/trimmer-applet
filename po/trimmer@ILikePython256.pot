@@ -1,0 +1,14 @@
+msgid ""
+msgstr "Language: English"
+
+#: applet.js:39
+msgid "Click to trim URL"
+msgstr ""
+
+#. metadata.json->name
+msgid "URL Trimmer"
+msgstr ""
+
+#. metadata.json->description
+msgid "Trim URL on clipboard"
+msgstr ""
