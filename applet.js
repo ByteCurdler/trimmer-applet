@@ -13,7 +13,7 @@ const ByteArray = imports.byteArray;
 
 const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
 
-const TrimHelper = 'trimmer.py';
+const TrimHelper = 'trim.py';
 
 const Gettext = imports.gettext;
 
