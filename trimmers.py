@@ -68,6 +68,6 @@ def bitly_redirect(groups):
 
 # https://regex101.com/r/fOjVrd/2
 @trimmer(fr"{PROTOCOL}drive.google.com/file/d/([A-Za-z0-9]+)"
-         fr"(?:/[a-z]*){GETPARAMS}")
+         fr"(?:/[a-z]*)?{GETPARAMS}")
 def google_drive_file(groups):
     return "https://drive.google.com/file/d/{}".format(*groups)
