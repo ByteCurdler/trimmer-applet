@@ -54,47 +54,55 @@ MyApplet.prototype = {
         clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
             function(_clipboard, text) {
                 try {
-                    let proc = Gio.Subprocess.new(
-                        ["/usr/bin/python3", GLib.build_filenamev([AppletDir,TrimHelper]), text],
-                        Gio.SubprocessFlags.STDOUT_PIPE);
-                    let streamOut = proc.get_stdout_pipe();
-                    streamOut.read_bytes_async(MAX_BYTES, 0, null, Lang.bind(this, function (o,o2) {
-                        let data = o.read_bytes_finish(o2);
-                        let clipboard = St.Clipboard.get_default();
-                        let data_string = data.get_data().toString();
-                        let status = data_string.split(":")[0]
-                        let result = data_string.split(":").slice(1, ).join(":")
-                        let icon;
-                        if (status == "fail") {
-                            icon = 'trimmer-fail'
-                            global.logError(LOGSTAMP + "Trimmer error:\n" + result)
-                        } else {
-                            data_string = data_string.slice(9,)
-                            if (result == text) {
-                                icon = 'trimmer-nochange'
-                                // global.log(LOGSTAMP + "Trimmer did not change URL \"" + text + "\"")
-                            } else {
-                                clipboard.set_text(St.ClipboardType.CLIPBOARD, result);
-                                icon = 'trimmer-success'
-                                // global.log(LOGSTAMP + "Trimmer changed \"" + text + "\" to \"" + result + "\"")
-                            }
+                    function blink(target, icon) {
+                        target.set_applet_icon_name(icon);
+                        if (target._snip_timeout !== null) {
+                            clearTimeout(target._snip_timeout)
                         }
-                        this.set_applet_icon_name(icon);
-                        if (this._snip_timeout !== null) {
-                            clearTimeout(this._snip_timeout)
-                        }
-                        this._snip_timeout = setTimeout(() => {
-                            this.set_applet_icon_name('trimmer');
-                            this._snip_timeout = setTimeout(() => {
-                                this.set_applet_icon_name(icon);
-                                this._snip_timeout = setTimeout(() => {
-                                    this.set_applet_icon_name('trimmer');
+                        target._snip_timeout = setTimeout(() => {
+                            target.set_applet_icon_name('trimmer');
+                            target._snip_timeout = setTimeout(() => {
+                                target.set_applet_icon_name(icon);
+                                target._snip_timeout = setTimeout(() => {
+                                    target.set_applet_icon_name('trimmer');
+                                    target._snip_timeout = null
                                 }, 150)
                             }, 150)
                         }, 150)
-                    }));
+                    }
+                    if (!text) {
+                        blink(this, 'trimmer-nochange')
+                    } else {
+                        this.set_applet_icon_name('trimmer-working');
+                        let proc = Gio.Subprocess.new(
+                            ["/usr/bin/python3", GLib.build_filenamev([AppletDir,TrimHelper]), text],
+                            Gio.SubprocessFlags.STDOUT_PIPE);
+                        let streamOut = proc.get_stdout_pipe();
+                        streamOut.read_bytes_async(MAX_BYTES, 0, null, Lang.bind(this, function (o,o2) {
+                            let data = o.read_bytes_finish(o2);
+                            let clipboard = St.Clipboard.get_default();
+                            let data_string = data.get_data().toString();
+                            let status = data_string.split(":")[0]
+                            let result = data_string.split(":").slice(1, ).join(":")
+                            if (status == "fail") {
+                                global.logError(LOGSTAMP + "Trimmer error:\n" + result)
+                                blink(this, 'trimmer-fail')
+                            } else {
+                                data_string = data_string.slice(9,)
+                                if (result == text) {
+                                    blink(this, 'trimmer-nochange')
+                                    // global.log(LOGSTAMP + "Trimmer did not change URL \"" + text + "\"")
+                                } else {
+                                    clipboard.set_text(St.ClipboardType.CLIPBOARD, result);
+                                    blink(this, 'trimmer-success')
+                                    // global.log(LOGSTAMP + "Trimmer changed \"" + text + "\" to \"" + result + "\"")
+                                }
+                            }
+                        }));
+                    }
                 } catch (e) {
                     global.logError("error", e)
+                    blink(this, 'trimmer-fail')
                 }
             }
         ));
